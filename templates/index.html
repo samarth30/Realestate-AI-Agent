@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{gmaps_api_key}}&callback=initMap&libraries=maps,marker&v=beta" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <title>InsightAI</title>
+
+    <style>
+        :root {
+            --primary-color: #4F46E5;
+            --secondary-color: #818CF8;
+            --background-dark: #1F2937;
+            --background-light: #2D3748;
+            --text-primary: #F3F4F6;
+            --text-secondary: #D1D5DB;
+            --accent-color: #10B981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--background-dark), #2C3E50);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .logo-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 0 30px rgba(79, 70, 229, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin: 1rem 0;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 600;
+        }
+
+        .chat-form {
+            display: flex;
+            gap: 1rem;
+            background: var(--background-light);
+            padding: 1rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            padding: 1rem 1.5rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+        }
+
+        .submit-btn {
+            padding: 1rem 2rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .submit-btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .result, .conversation-history {
+            background: var(--background-light);
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .conversation-entry {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .conversation-entry:hover {
+            transform: translateX(5px);
+        }
+
+        .question {
+            color: var(--accent-color);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .markdown-content {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 8px;
+            color: var(--text-secondary);
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            margin-top: auto;
+        }
+
+        .clear-btn {
+            background: #EF4444;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clear-btn:hover {
+            background: #DC2626;
+            transform: translateY(-2px);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result, .conversation-entry {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .chat-form {
+                flex-direction: column;
+            }
+
+            .submit-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='images/logo.webp') }}" 
+                     alt="InsightAI Logo" 
+                     class="logo">
+            </div>
+            <h1>InsightAI</h1>
+        </header>
+
+        <form method="POST" class="chat-form">
+            <input type="text" 
+                   name="question" 
+                   class="chat-input"
+                   placeholder="Ask me anything..." 
+                   required>
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-paper-plane"></i>
+                Send
+            </button>
+        </form>
+
+        {% if result %}
+        <div class="result">
+            <h2 class="section-title">
+                <i class="fas fa-robot"></i>
+                Response
+            </h2>
+            {% for res in result %}
+            <div class="markdown-content">
+                <p>{{ res }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if conversation_history %}
+        <div class="conversation-history">
+            <h2 class="section-title">
+                <i class="fas fa-history"></i>
+                Previous Conversations
+            </h2>
+            {% for entry in conversation_history %}
+            <div class="conversation-entry">
+                <p class="question">
+                    <i class="fas fa-user"></i> 
+                    {{ entry.question }}
+                </p>
+                <div class="markdown-content">
+                    <i class="fas fa-robot"></i>
+                    {{ entry.answer }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <footer>
+        <form method="POST">
+            <input type="hidden" name="sign_out" value="true">
+            <button type="submit" class="clear-btn">
+                <i class="fas fa-trash"></i>
+                Clear Memory
+            </button>
+        </form>
+    </footer>
+</body>
+</html>
